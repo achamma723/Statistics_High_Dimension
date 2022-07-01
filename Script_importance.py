@@ -1,14 +1,18 @@
-from sklearn.datasets import make_regression
-from sklearn.ensemble import RandomForestRegressor
+import matplotlib.pyplot as plt
 import numpy as np
 from scipy.linalg import toeplitz
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.inspection import permutation_importance
+from sklearn.model_selection import train_test_split
 
 
+list_z_stat = []
 n = 1000
 p = 50
 n_signal = 20
 snr = 4
 rho = 0.8
+n_trials = 100
 
 # Create Correlation matrix with the toeplitz design
 elements = np.repeat(rho, p)
@@ -35,3 +39,28 @@ prod_signal = np.dot(X[:, :n_signal], betas)
 noise_magnitude = np.linalg.norm(prod_signal, ord=2) / (np.sqrt(n) * snr)
 y =  prod_signal + noise_magnitude * np.random.normal(size=n)
 
+for i in range(n_trials):
+    print(f"Processing trial:{i+1}")
+
+    # Train/test split
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
+
+    print("Fitting the model")
+    rf = RandomForestRegressor()
+    rf.fit(X_train, y_train)
+
+    print("Computing the importance scores")
+    result = permutation_importance(
+        rf, X_test, y_test, n_repeats=100, n_jobs=10
+    )
+    z_stat = result['importances_mean'] / result['importances_std']
+    list_z_stat.append(z_stat[20])
+
+# Plot the histogram
+plt.hist(list_z_stat)
+
+# Save the histogram
+plt.savefig('hist.png')
+
+# Display the plot
+plt.show()
