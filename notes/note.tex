@@ -1,0 +1,113 @@
+\documentclass[12pt]{report}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{array}
+\usepackage{bm}
+\usepackage{bbm}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage[left=2.5cm, right=2.5cm, top=2cm, bottom=2.5cm]
+{geometry}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage[dvipsnames]{xcolor}
+\usepackage[hyperfootnotes=false]{hyperref}
+\usepackage{longtable}
+\usepackage{multirow}
+\usepackage{algorithm}
+\usepackage{comment}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,
+	urlcolor=blue,
+	citecolor=red,
+}
+\usepackage{todonotes}
+\usepackage[T1]{fontenc}
+\usepackage{tikz}
+\newcommand*\circled[1]{\tikz[baseline=(char.base)]{
+  \node[shape=circle,draw,inner sep=1pt] (char) {#1};}}
+\newcommand{\indep}{\perp \!\!\! \perp}
+\bibliographystyle{plain}
+\newcolumntype{L}[1]{>{\raggedright\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+\usepackage{algpseudocode}
+% Remove 0's from the sections and subsection titles
+\renewcommand{\thesection}{\arabic{section}}
+\newcommand{\cbox}[1]{\raisebox{\depth}{\fcolorbox{black}{#1}{\null}}}
+\newcommand{\BT}[1]{\todo[color=orange!40]{BT: #1}}
+\newcommand{\iBT}[1]{\todo[inline,color=orange!40]{BT: #1}}
+\def\mbE{\mathbb{E}}
+
+
+\title{Why use conditional permutation importance to control the error rate}
+
+\begin{document}
+
+\maketitle
+
+We use the setting of \cite{miPermutationbasedIdentificationImportant2021}.
+%
+We want to establish the necessity to rely on a conditional importance sampling.
+
+We consider formula (8) in \cite{miPermutationbasedIdentificationImportant2021}, that represents the actual formula used for importance analysis.
+%
+It can be rewritten:
+\[ \hat{M}_j^{(P)} = \frac{1}{N} \left( \| Y-\hat{\mu}(X^{(j)}) \|^2 - \| Y-\hat{\mu}(X) \|^2 \right)
+\]
+Which yields:
+\[
+\hat{M}_j^{(P)} = \frac{1}{N} \left( \| \mu(X)-\hat{\mu}(X^{(j)}) \|^2 - \| \mu(X)-\hat{\mu}(X)  \|^2 + 2 \varepsilon (\hat{\mu}(X)-\hat{\mu}(X^{(j)}))  \right)
+\]
+
+In \cite{miPermutationbasedIdentificationImportant2021}, it is argued that this vanishes when $N \rightarrow \infty$.
+%
+But some of the terms converge to 0 too slowly in the presence of correlations, leading to non-type-1 error control.
+%
+Let us consider a linear model $\mu(X) = Xw$, that one case immediately rewrite $\mu(X) = X_jw_j + X_{-j}w_{-j}$, in the presence of correlation with in $X$, ie $X_j = \alpha X_{-j} w_{-j} + \delta$, where $\alpha$ is a scalar and $\delta$ a noise vector.
+%
+We further consider that $X_j$ is a null feature ($w_j=0$).
+%
+
+
+\[
+\hat{M}_j^{(P)} = \frac{1}{N} \left( 2  \langle (X_j - X_j^{perm}) \hat{w}_j, X_{-j} (w_{-j} - \hat{w}_{-j} + \varepsilon) \rangle \right)
+\]
+where
+$\langle X_j^{perm}, X_{-j} (w_{-j} - \hat{w}_{-j} \rangle = O(\sqrt{N})$ because the permutation destroys existing correlation, and
+$\langle (X_j - X_j^{perm}) w_{-j}, \varepsilon \rangle = O(\sqrt{N})$, because this is a noise term.
+%
+By contrast,
+$\langle (X_j, X_{-j} (w_{-j} - \hat{w}_{-j}) \rangle = O(N)$ due to the the correlation between $X_j$ and $X_{-j}$.
+This means that there remains a non-vanishing terms when $N \rightarrow \infty$.
+
+Alternatively, if we can generate $X^{(j)}$ conditionally, then
+$\langle (X_j - X_j^{perm}) \hat{w}_j, X_{-j} (w_{-j} - \hat{w}_{-j} = O(\sqrt{N}) \rangle$, because the rightmost term becomes uncorrelated to the right one.
+
+\begin{comment}
+  We obtain
+\[
+\mbE(\hat{M}_j^{(P)}) = \frac{1}{N} \left( 2 \alpha \hat{w}_j^2  \langle X_{-j} w_{-j}, X_{-j} (w_{-j} - \hat{w}_{-j}) \rangle \right)
+\]
+
+This quantity only slowly converges to $0$ when $N$ increases, because $\hat{w}_j$ converges to $0$ but is
+non-zero for finite $N$.
+%
+This explains why unconditional importance tends to wrongly select
+such variables, leading to an uncontrolled error rate. This situation worsens
+when $\alpha$ increases.
+%
+By contrast, if we can generate $X^{(j)}$ conditionally, then the above becomes
+\[
+\mbE(\hat{M}_j^{(P)}) = \frac{1}{N} \left( 2 \hat{w}_j^2  \mbE(\langle \delta - \delta^{perm}, X_{-j} (w_{-j} - \hat{w}_{-j}) \rangle) \right) = 0
+\]
+
+Indeed, $X^{(j)}$ retains the dependency between $X_j'$ and $X_{-j}$ that exists in $X$
+and the above term vanishes, leading to an expectancy-0 importance
+score and correct inference.
+\end{comment}
+
+
+\bibliography{MyLibrary_dnn}
+
+\end{document}
