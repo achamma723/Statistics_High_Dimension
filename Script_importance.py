@@ -4,6 +4,8 @@ from scipy.linalg import toeplitz
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.inspection import permutation_importance
 from sklearn.model_selection import train_test_split
+from joblib import Parallel, delayed
+import time
 
 
 list_z_stat = []
@@ -13,6 +15,9 @@ n_signal = 20
 snr = 4
 rho = 0.8
 n_trials = 100
+# Parallel options
+n_jobs = 15
+verbose = 0
 
 # Create Correlation matrix with the toeplitz design
 elements = np.repeat(rho, p)
@@ -39,7 +44,7 @@ prod_signal = np.dot(X[:, :n_signal], betas)
 noise_magnitude = np.linalg.norm(prod_signal, ord=2) / (np.sqrt(n) * snr)
 y =  prod_signal + noise_magnitude * np.random.normal(size=n)
 
-for i in range(n_trials):
+def comput_statistic(X, y, i, test_size=0.2, n_repeats=100):
     print(f"Processing trial:{i+1}")
 
     # Train/test split
@@ -51,16 +56,22 @@ for i in range(n_trials):
 
     print("Computing the importance scores")
     result = permutation_importance(
-        rf, X_test, y_test, n_repeats=100, n_jobs=10
-    )
+        rf, X_test, y_test, n_repeats=100)
     z_stat = result['importances_mean'] / result['importances_std']
-    list_z_stat.append(z_stat[20])
+    return z_stat[20]
+
+
+start = time.time()
+parallel = Parallel(n_jobs=n_jobs, verbose=verbose)
+list_z_stat = parallel(delayed(comput_statistic)(X, y, i, test_size=0.2, n_repeats=100)
+    for i in range(n_trials)) 
+print(f"Time elapsed:{time.time() - start}")
 
 # Plot the histogram
 plt.hist(list_z_stat)
 
 # Save the histogram
-plt.savefig('hist.png')
+plt.savefig('hist_1000_trials.png')
 
 # Display the plot
 plt.show()
