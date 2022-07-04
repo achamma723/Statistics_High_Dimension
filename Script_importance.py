@@ -2,7 +2,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy.linalg import toeplitz
 from sklearn.ensemble import RandomForestRegressor
-from sklearn.inspection import permutation_importance
 from sklearn.model_selection import train_test_split
 from joblib import Parallel, delayed
 import time
@@ -16,7 +15,7 @@ snr = 4
 rho = 0.8
 n_trials = 100
 # Parallel options
-n_jobs = -1
+n_jobs = 15
 verbose = 0
 
 # Create Correlation matrix with the toeplitz design
@@ -44,6 +43,7 @@ prod_signal = np.dot(X[:, :n_signal], betas)
 noise_magnitude = np.linalg.norm(prod_signal, ord=2) / (np.sqrt(n) * snr)
 y =  prod_signal + noise_magnitude * np.random.normal(size=n)
 
+
 def comput_statistic(X, y, i, test_size=0.2, n_repeats=100):
     print(f"Processing trial:{i+1}")
 
@@ -54,11 +54,21 @@ def comput_statistic(X, y, i, test_size=0.2, n_repeats=100):
     rf = RandomForestRegressor()
     rf.fit(X_train, y_train)
 
+    # z_statistic = np.empty((n_repeats, len(y_test), X_test.shape[1]))
+    z_statistic = np.empty((n_repeats, len(y_test)))
     print("Computing the importance scores")
-    result = permutation_importance(
-        rf, X_test, y_test, n_repeats=100)
-    z_stat = result['importances_mean'] / result['importances_std']
-    return z_stat[20]
+    for perm in range(n_repeats):
+        # print(f"Processing: {perm}")
+        # for p_col in range(X_test.shape[1]):
+        current_X = X_test.copy()
+        np.random.shuffle(current_X[:, 20])
+        z_statistic[perm, :] = (y_test - rf.predict(current_X)) ** 2 - \
+            (y_test - rf.predict(X_test)) ** 2
+    imp_sc = np.mean(np.mean(z_statistic, axis=0), axis=0)
+    std_sc = np.std(np.mean(z_statistic, axis=0),
+                                axis=0) / np.sqrt(len(y_test)-1)
+    z_stat = imp_sc/std_sc
+    return z_stat
 
 
 start = time.time()
@@ -71,7 +81,7 @@ print(f"Time elapsed:{time.time() - start}")
 plt.hist(list_z_stat)
 
 # Save the histogram
-plt.savefig('hist_1000_trials.png')
+plt.savefig('hist_new.png')
 
 # Display the plot
 plt.show()
