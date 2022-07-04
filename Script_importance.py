@@ -16,7 +16,7 @@ snr = 4
 rho = 0.8
 n_trials = 100
 # Parallel options
-n_jobs = 15
+n_jobs = -1
 verbose = 0
 
 # Create Correlation matrix with the toeplitz design
