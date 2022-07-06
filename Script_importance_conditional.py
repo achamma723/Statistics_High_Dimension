@@ -26,7 +26,8 @@ vector = np.array([x ** y for (x, y) in zip(elements, reduction_combs)])
 cov_matrix = toeplitz(vector)
 
 # Generation of the predictors
-X = np.random.multivariate_normal(mean=np.zeros(p), cov=cov_matrix, size=n)
+rng = np.random.RandomState(100)
+X = rng.multivariate_normal(mean=np.zeros(p), cov=cov_matrix, size=n)
 
 # Random choice of the relevant variables
 list_var = np.random.choice(p, n_signal, replace=False)
