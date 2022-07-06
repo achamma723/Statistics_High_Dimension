@@ -14,7 +14,7 @@ p = 50
 n_signal = 20
 snr = 4
 rho = 0.8
-n_trials = 10
+n_trials = 100
 # Parallel options
 n_jobs = -1
 verbose = 0
@@ -95,7 +95,7 @@ print(f"Time elapsed:{time.time() - start}")
 plt.hist(list_z_stat)
 
 # Save the histogram
-plt.savefig('hist_cond_10.png')
+plt.savefig('hist_cond_100.png')
 
 # Display the plot
 plt.show()
