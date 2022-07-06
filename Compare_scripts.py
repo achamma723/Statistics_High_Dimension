@@ -81,7 +81,7 @@ n_signal = 20
 # Signal-Noise Ratio
 snr = 4
 # Degree of correlation
-rho = 0.8
+rho = 0.98
 # Number of repetitions
 n_trials = 100
 # Size of the test set (computation of the importance scores)
@@ -134,13 +134,17 @@ fig.suptitle("Parameters:n="+str(n)+"/p="+str(p)+"/n_signal="+str(n_signal)
           +"/n_repeats="+str(n_repeats)+"\n time="+"{:.2f}".format(duration), fontsize=14)
 
 axs[0].hist(z_stat_perm)
-axs[0].set_title('Permutation approach')
+mean_perm = np.mean(z_stat_perm)
+std_perm = np.std(z_stat_perm)
+axs[0].set_title('Permutation approach: Mean={:.2f}, Std={:.2f}'.format(mean_perm, std_perm))
 
 axs[1].hist(z_stat_cond)
-axs[1].set_title('Conditional approach')
+mean_cond = np.mean(z_stat_cond)
+std_cond = np.std(z_stat_cond)
+axs[1].set_title('Conditional approach: Mean={:.2f}, Std={:.2f}'.format(mean_cond, std_cond))
 
 # Save the histogram
-fig.savefig('hist_n{}_p{}_ntrial{}_rho{}.png'.format(n, p, n_trials, rho))
+fig.savefig('hist_n{}_p{}_ntrial{}_rho{}_nrepeats{}.png'.format(n, p, n_trials, rho, n_repeats))
 
 # Display the plot
 plt.show()
