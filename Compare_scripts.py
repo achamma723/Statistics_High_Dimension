@@ -89,26 +89,25 @@ test_size=0.2
 # Number of permutations (Computation of z-statistic)
 n_repeats=100
 ## Parallel options
-n_jobs = -1
+n_jobs = 15
 verbose = 0
 
-# Create Correlation matrix with the toeplitz design
-elements = np.repeat(rho, p)
-reduction_combs = np.arange(p)
-vector = np.array([x ** y for (x, y) in zip(elements, reduction_combs)])
-cov_matrix = toeplitz(vector)
+# Create Correlation matrix
+cov_matrix = np.zeros((p, p))
+for i in range(p):
+    for j in range(p):
+        if i != j:
+            if (i < 21) and (j < 21):
+                cov_matrix[i, j] = rho
+            else:
+                cov_matrix[i, j] = 0
+        else:
+            cov_matrix[i, j] = 1
 
 # Generation of the predictors
 ## Fix the seed 
 rng = np.random.RandomState(seed)
 X = rng.multivariate_normal(mean=np.zeros(p), cov=cov_matrix, size=n)
-
-# Random choice of the relevant variables
-list_var = rng.choice(p, n_signal, replace=False)
-reorder_var = np.array([i for i in range(p) if i not in list_var])
-
-# Reorder data matrix so that first n_signal predictors are the signal predictors
-X = X[:, np.concatenate([list_var, reorder_var], axis=0)]
 
 # Random choice of the coefficients for the signal
 effectset = np.array([-0.5, -1, -2, -3, 0.5, 1, 2, 3])
