@@ -50,7 +50,7 @@ def _comput_conditional(X, y, i, test_size=0.2, n_repeats=100):
     # z_statistic = np.empty((n_repeats, len(y_test), X_test.shape[1]))
     z_statistic = np.empty((n_repeats, len(y_test)))
     X_test_minus_idx = np.delete(np.copy(X_test), null_col, 1)
-    regr = RandomForestRegressor(max_depth=2)
+    regr = RandomForestRegressor()
     regr.fit(X_test_minus_idx, X_test[:, null_col])
     X_col_pred = regr.predict(X_test_minus_idx)    
     Res_col = X_test[:, null_col] - X_col_pred
@@ -81,15 +81,15 @@ n_signal = 20
 # Signal-Noise Ratio
 snr = 4
 # Degree of correlation
-rho = 0.98
+rho = 0.8
 # Number of repetitions
-n_trials = 100
+n_trials = 1000
 # Size of the test set (computation of the importance scores)
 test_size=0.2
 # Number of permutations (Computation of z-statistic)
 n_repeats=100
 ## Parallel options
-n_jobs = 15
+n_jobs = -1
 verbose = 0
 
 # Create Correlation matrix
