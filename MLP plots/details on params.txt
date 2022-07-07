@@ -1,0 +1,5 @@
+MLP Architecture: Two linear layers with 20 hidden neurons and ReLU activation layer
+Loss : MSE
+optimizer : SGD (lr=0.01)
+
+Conditional part: RF with max_depth=2
